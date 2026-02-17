@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Studio d'écriture — Notes intelligentes</title>
+    <title>Studio d'écriture — Notes riches</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,179 +15,179 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Google Fonts + polices variées -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Merriweather&family=JetBrains+Mono&family=Atkinson+Hyperlegible&display=swap" rel="stylesheet">
     
     <style>
-        /* personnalisation radicale : fond blanc pur, pas de fioritures */
+        /* reset complet vers le blanc */
+        * {
+            background-color: white;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html, main, div, header, footer, section, article {
+            background: white !important;
+        }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: white;  /* arrière-plan totalement supprimé → fond blanc */
             color: #1e293b;
+            min-height: 100vh;
         }
-        /* adaptation iPhone : tout doit respirer et être tactile */
+        /* accessibilité tactile mobile */
         @media (max-width: 640px) {
-            .text-4xl { font-size: 2rem; }  /* titre plus lisible */
-            .p-8 { padding: 1.5rem; }
-            .h-16 { height: 4rem; }          /* header plus haut pour éviter les faux taps */
-            button, .p-2 { min-height: 44px; min-width: 44px; } /* accessibilité tactile */
+            button, .p-2, .rounded-full {
+                min-height: 48px;
+                min-width: 48px;
+            }
+            .text-4xl { font-size: 2rem; }
         }
-        /* éditeur pleine largeur, sans aucune barre grise */
-        .editor-fullwidth {
+        /* zone d'édition extensible */
+        .editable-area {
             width: 100%;
-            max-width: 100%;
-            background: white;
-        }
-        .no-bg {
-            background: transparent !important;
-            background-color: white !important;
-        }
-        /* zone de texte extensible à l'infini */
-        .expanding-textarea {
-            min-height: 65vh;
-            height: auto;
-            width: 100%;
+            min-height: 60vh;
             background: white;
             border: none;
             resize: vertical;
-            font-size: 1.125rem;
+            font-size: 1.2rem;
             line-height: 1.7;
             color: #0f172a;
             caret-color: #4f46e5;
-        }
-        .expanding-textarea:focus {
             outline: none;
-            ring: none;
-            border: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 0.5rem 0;
         }
-        /* arrière-plan enlevé partout */
-        header, main, div, section, .bg-slate-50, .bg-white, .border {
-            background: white !important;
-            background-color: white !important;
+        .editable-area:empty:before {
+            content: attr(placeholder);
+            color: #cbd5e1;
+            font-style: normal;
+            font-weight: 300;
         }
-        /* mais on garde une hiérarchie subtile avec des ombres très légères */
-        .header-toolbar {
-            background: white !important;
-            border-bottom: 1px solid #f1f5f9;
-            box-shadow: 0 2px 4px -2px rgba(0,0,0,0.02);
-        }
-        .toolbar-panel {
-            background: white !important;
+        /* toolbar flottante épurée */
+        .toolbar-glass {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(8px);
             border: 1px solid #f1f5f9;
+            border-radius: 48px;
+            padding: 0.25rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+        .toolbar-btn {
+            padding: 0.6rem 1rem;
             border-radius: 40px;
-            padding: 0.5rem 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        }
-        /* surlignage type marker */
-        .highlight {
-            background: linear-gradient(120deg, #fef9c3 0%, #fef9c3 90%);
-            padding: 0 0.2rem;
-            border-radius: 4px;
-            color: #1e293b;
+            transition: all 0.1s;
             font-weight: 500;
+            background: transparent;
+            white-space: nowrap;
         }
-        /* style pour gras / inline */
-        .strong-text {
-            font-weight: 700;
-            color: #0f172a;
+        .toolbar-btn:hover {
+            background: #f8fafc;
         }
-        /* compteur et footer */
-        .meta-footer {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            background: white !important;
+        .highlight-yellow { background-color: #fef9c3; color: #1e293b; }
+        .highlight-green { background-color: #dcfce7; color: #14532d; }
+        .highlight-blue { background-color: #dbeafe; color: #1e3a8a; }
+        .highlight-remove { background-color: transparent; }
+        /* toast */
+        #toast {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
         }
     </style>
 </head>
-<body class="antialiased text-slate-800" style="background: white;">
+<body>
 
-    <!-- En-tête épuré, pas de fond gris -->
-    <header class="sticky top-0 z-40 header-toolbar" style="background: white;">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <!-- HEADER minimal -->
+    <header class="sticky top-0 z-40 bg-white border-b border-slate-100">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="index.html" class="p-2 text-slate-400 hover:text-indigo-600 rounded-full hover:bg-slate-50 transition-all" title="Retour" style="min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center;">
+                <a href="index.html" class="p-2 text-slate-400 hover:text-indigo-600 rounded-full hover:bg-slate-50 transition-all" title="Retour">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 </a>
-                <div class="flex items-center gap-2 text-sm text-slate-400">
-                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                    <span id="noteDate" class="font-light">Brouillon</span>
-                </div>
+                <span id="noteDate" class="text-sm text-slate-400 font-light">Brouillon</span>
             </div>
-            
-            <!-- Boutons d'action : suppression + sauvegarde -->
             <div class="flex items-center gap-2">
-                <button onclick="deleteNote()" id="deleteBtn" class="hidden p-2 text-rose-400 hover:text-rose-600 rounded-full hover:bg-rose-50 transition-colors" title="Supprimer définitivement">
+                <button onclick="deleteNote()" id="deleteBtn" class="hidden p-2 text-rose-400 hover:text-rose-600 rounded-full hover:bg-rose-50 transition-colors" title="Supprimer">
                     <i data-lucide="trash-2" class="w-5 h-5"></i>
                 </button>
                 <button onclick="saveNote()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-full text-sm font-medium shadow-sm flex items-center gap-2 active:scale-95 transition">
                     <i data-lucide="save" class="w-4 h-4"></i>
-                    <span class="hidden xs:inline">Enregistrer</span>
+                    <span class="hidden sm:inline">Sauvegarder</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Barre d'outils de personnalisation (flottante sur mobile, fixe sur desktop) -->
-    <div class="sticky top-16 z-30 py-2 bg-white/95 backdrop-blur-sm border-b border-slate-100" style="background: rgba(255,255,255,0.98);">
-        <div class="max-w-4xl mx-auto px-4 flex flex-wrap items-center gap-2 justify-between">
-            <!-- Groupe style texte -->
-            <div class="flex items-center gap-1 p-1 bg-white rounded-full border border-slate-200 shadow-xs toolbar-panel" style="background:white;">
-                <button onclick="applyStyle('bold')" class="p-3 rounded-full hover:bg-slate-100 text-slate-600" title="Gras"><i data-lucide="bold" class="w-4 h-4"></i></button>
-                <button onclick="applyStyle('highlight')" class="p-3 rounded-full hover:bg-yellow-50 text-yellow-600" title="Surligner"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
-                <button onclick="increaseFontSize()" class="p-3 rounded-full hover:bg-slate-100 text-slate-600" title="Augmenter la taille"><i data-lucide="type" class="w-4 h-4"></i><span class="text-xs ml-0.5">+</span></button>
-                <button onclick="decreaseFontSize()" class="p-3 rounded-full hover:bg-slate-100 text-slate-600" title="Diminuer taille"><i data-lucide="type" class="w-4 h-4"></i><span class="text-xs ml-0.5">-</span></button>
-                <select id="fontFamilySelect" onchange="changeFont(this.value)" class="bg-transparent text-sm border-0 font-medium focus:ring-0 text-slate-600 py-2 px-1 rounded-full">
+    <!-- BARRE D'OUTILS avec 3 surligneurs + annuler/rétablir -->
+    <div class="sticky top-16 z-30 py-2 bg-white/95 backdrop-blur-sm border-b border-slate-100">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="toolbar-glass flex flex-wrap items-center gap-1 justify-center sm:justify-start">
+                <!-- gras -->
+                <button onclick="applyFormat('bold')" class="toolbar-btn" title="Gras (Ctrl+B)"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                
+                <!-- 3 surligneurs + neutre -->
+                <div class="h-6 w-px bg-slate-200 mx-1"></div>
+                <button onclick="applyHighlight('#fef9c3')" class="toolbar-btn" style="background:#fef9c3; color:#92400e;" title="Surligner jaune">🟨</button>
+                <button onclick="applyHighlight('#dcfce7')" class="toolbar-btn" style="background:#dcfce7; color:#166534;" title="Surligner vert">🟩</button>
+                <button onclick="applyHighlight('#dbeafe')" class="toolbar-btn" style="background:#dbeafe; color:#1e40af;" title="Surligner bleu">🟦</button>
+                <button onclick="removeHighlight()" class="toolbar-btn" title="Enlever le surlignage"><i data-lucide="eraser" class="w-4 h-4"></i></button>
+                
+                <div class="h-6 w-px bg-slate-200 mx-1"></div>
+                <!-- taille de police -->
+                <button onclick="changeFontSize(0.1)" class="toolbar-btn" title="Agrandir"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                <button onclick="changeFontSize(-0.1)" class="toolbar-btn" title="Réduire"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                
+                <!-- police -->
+                <select id="fontSelect" onchange="changeFont(this.value)" class="toolbar-btn bg-transparent border-0 focus:ring-0 text-sm">
                     <option value="Inter">Inter</option>
                     <option value="Merriweather">Merriweather</option>
                     <option value="Atkinson Hyperlegible">Atkinson</option>
                     <option value="JetBrains Mono">Mono</option>
                 </select>
-            </div>
-            <!-- affichage longueur -->
-            <div class="text-xs text-slate-400 bg-white px-3 py-2 rounded-full border border-slate-200">
-                <span id="charCount">0 caractères</span>
+                
+                <div class="h-6 w-px bg-slate-200 mx-1"></div>
+                <!-- annuler / rétablir -->
+                <button onclick="undoAction()" class="toolbar-btn" title="Annuler (Ctrl+Z)"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
+                <button onclick="redoAction()" class="toolbar-btn" title="Rétablir (Ctrl+Y)"><i data-lucide="redo-2" class="w-4 h-4"></i></button>
             </div>
         </div>
     </div>
 
-    <!-- Conteneur principal — 100% largeur, fond blanc intégral -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-6" style="background: white;">
-        <!-- Le "papier" n'a plus aucun fond gris, juste du blanc -->
-        <div class="w-full bg-white" style="background: white;">
-            <!-- Titre éditable (pas de limites visuelles) -->
-            <input type="text" id="noteTitle" placeholder="Titre (facultatif)" 
-                class="w-full text-4xl sm:text-5xl font-light text-slate-800 placeholder-slate-200 border-none focus:outline-none focus:ring-0 bg-transparent px-0 py-2">
-            
-            <div class="h-px bg-slate-100 my-4"></div>
-            
-            <!-- ZONE D'ÉCRITURE PRINCIPALE : extensible, personnalisable, plus d'arrière-plan limité -->
-            <div id="editableArea" contenteditable="true" 
-                class="expanding-textarea focus:outline-none whitespace-pre-wrap break-words"
-                style="font-size: 1.2rem; font-family: 'Inter', sans-serif; background: white;"
-                aria-label="Zone de texte éditable"
-                placeholder="Commencez à écrire ici... (sélectionnez du texte pour le personnaliser)">
-                <!-- Le contenu dynamique sera inséré via JS / Firebase, mais on peut préremplir -->
-            </div>
-            <!-- Champ caché pour la synchronisation avec le model Firebase (car contenteditable n'a pas de value) -->
-            <textarea id="noteContentMirror" class="hidden"></textarea>
+    <!-- ZONE PRINCIPALE D'ÉDITION -->
+    <main class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Titre -->
+        <input type="text" id="titleInput" placeholder="Titre (facultatif)" 
+            class="w-full text-4xl sm:text-5xl font-light text-slate-800 placeholder-slate-200 border-none focus:outline-none focus:ring-0 bg-transparent px-0 py-2">
+        
+        <div class="h-px bg-slate-100 my-4"></div>
+        
+        <!-- Éditeur riche contenteditable -->
+        <div id="editor" 
+            class="editable-area" 
+            placeholder="Commencez à écrire ici... (sélectionnez du texte pour le personnaliser)"
+            contenteditable="true">
         </div>
         
-        <!-- Footer ultra simple -->
-        <div class="mt-6 flex justify-between text-xs text-slate-300">
-            <span id="savingIndicator"></span>
-            <span>⚡ double-clic pour agrandir</span>
+        <!-- infos bas de page -->
+        <div class="mt-6 flex justify-between items-center text-xs text-slate-300">
+            <span id="charCount">0 caractères</span>
+            <span class="flex gap-3">
+                <span id="saveStatus"></span>
+                <span>⌘+S sauvegarde</span>
+            </span>
         </div>
     </main>
 
-    <!-- Notification toast (blanche avec ombre) -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-slate-700 px-6 py-4 rounded-2xl shadow-xl border border-slate-200 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 z-50">
-        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
-        <span id="toastMessage" class="font-medium">Prêt</span>
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-4 rounded-2xl shadow-xl border border-slate-200 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 z-50 bg-white">
+        <i id="toastIcon" data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
+        <span id="toastMessage" class="font-medium text-slate-700">Prêt</span>
     </div>
 
     <script>
         (function() {
-            // ---------- CONFIG FIREBASE ----------
+            // ----- FIREBASE -----
             const firebaseConfig = {
                 apiKey: "AIzaSyDfJwZNAtT5u9sKdw7R2J7QOcohf2_03Vk",
                 authDomain: "souhaibou-4883d.firebaseapp.com",
@@ -200,69 +200,109 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.firestore();
             
-            // ---------- ÉLÉMENTS ----------
-            const editableDiv = document.getElementById('editableArea');
-            const titleInput = document.getElementById('noteTitle');
+            // ----- ÉLÉMENTS DOM -----
+            const editor = document.getElementById('editor');
+            const titleInput = document.getElementById('titleInput');
             const noteDateSpan = document.getElementById('noteDate');
             const deleteBtn = document.getElementById('deleteBtn');
             const charCountSpan = document.getElementById('charCount');
             const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
             const toastMessage = document.getElementById('toastMessage');
-            const mirrorTextarea = document.getElementById('noteContentMirror');
-            const fontSelect = document.getElementById('fontFamilySelect');
-
-            // Variables d'état
+            const fontSelect = document.getElementById('fontSelect');
+            const saveStatus = document.getElementById('saveStatus');
+            
+            // ----- ÉTAT GLOBAL -----
             let noteId = new URLSearchParams(window.location.search).get('id');
             let isDirty = false;
-            let currentFontSize = 1.2; // en rem
+            let currentFontSize = 1.2; // rem
             
-            // Initialiser les icônes Lucide
+            // Initialisation Lucide
             lucide.createIcons();
 
-            // Charger la note si id présent
+            // --- CHARGEMENT NOTE ---
             if (noteId) {
                 loadNote(noteId);
                 deleteBtn.classList.remove('hidden');
             } else {
                 noteDateSpan.textContent = 'Nouvelle note';
-                editableDiv.focus();
+                editor.focus();
             }
 
-            // Mettre à jour le compteur / mirror à chaque frappe
-            function updateCharCountAndMirror() {
-                const text = editableDiv.innerText || '';
-                const count = text.length;
-                charCountSpan.textContent = `${count} caractère${count !== 1 ? 's' : ''}`;
-                mirrorTextarea.value = text;    // pour sauvegarde (on prend le texte, mais on perd le html ? on stockera le html si on veut le format)
-                // On veut conserver le HTML (gras, surlignage) donc on va plutôt sauvegarder le innerHTML dans Firestore.
-                // On crée une variable globale pour le html.
+            // --- COMPTEUR & DIRTY ---
+            function updateCharCount() {
+                const text = editor.innerText || '';
+                charCountSpan.textContent = `${text.length} caractère${text.length !== 1 ? 's' : ''}`;
                 isDirty = true;
             }
+            editor.addEventListener('input', updateCharCount);
+            titleInput.addEventListener('input', () => { isDirty = true; });
 
-            // Fonction de chargement
+            // --- SAUVEGARDE (corrigée avec vérification toast) ---
+            async function saveNote() {
+                const title = titleInput.value.trim() || 'Sans titre';
+                const contentHtml = editor.innerHTML.trim();
+                const contentText = editor.innerText.trim();
+                
+                if (!contentText && !titleInput.value.trim()) {
+                    showToast('Écrivez quelque chose', 'error');
+                    return;
+                }
+                
+                const now = new Date().toISOString();
+                const noteData = {
+                    title,
+                    content: contentText,
+                    contentHtml: contentHtml || '',
+                    fontFamily: editor.style.fontFamily || 'Inter',
+                    fontSize: currentFontSize.toString(),
+                    updatedAt: now
+                };
+                
+                try {
+                    if (noteId) {
+                        await db.collection('notes').doc(noteId).update(noteData);
+                        showToast('Note mise à jour', 'success');
+                    } else {
+                        const newId = Date.now().toString(36) + '-' + Math.random().toString(36).substring(2);
+                        noteId = newId;
+                        await db.collection('notes').doc(newId).set({
+                            ...noteData,
+                            id: newId,
+                            createdAt: now
+                        });
+                        window.history.replaceState({}, '', `?id=${newId}`);
+                        deleteBtn.classList.remove('hidden');
+                        showToast('Nouvelle note enregistrée', 'success');
+                    }
+                    isDirty = false;
+                    noteDateSpan.textContent = `enreg. ${formatDate(now)}`;
+                    if (saveStatus) saveStatus.textContent = '✔ sauvegardé';
+                    setTimeout(() => { if (saveStatus) saveStatus.textContent = ''; }, 2000);
+                } catch (e) {
+                    console.error('save error', e);
+                    showToast('Erreur de sauvegarde', 'error');
+                }
+            }
+
+            // --- CHARGEMENT ---
             async function loadNote(id) {
                 try {
                     const doc = await db.collection('notes').doc(id).get();
                     if (doc.exists) {
                         const note = doc.data();
                         titleInput.value = note.title || '';
-                        // Restaurer le contenu HTML si présent, sinon texte
-                        if (note.contentHtml) {
-                            editableDiv.innerHTML = note.contentHtml;
-                        } else {
-                            editableDiv.innerText = note.content || '';
-                        }
-                        // Restaurer la police et taille si présentes
+                        editor.innerHTML = note.contentHtml || note.content || '';
                         if (note.fontFamily) {
-                            editableDiv.style.fontFamily = note.fontFamily;
+                            editor.style.fontFamily = note.fontFamily;
                             fontSelect.value = note.fontFamily;
                         }
                         if (note.fontSize) {
                             currentFontSize = parseFloat(note.fontSize) || 1.2;
-                            editableDiv.style.fontSize = currentFontSize + 'rem';
+                            editor.style.fontSize = currentFontSize + 'rem';
                         }
-                        noteDateSpan.textContent = note.updatedAt ? `modif. ${formatDate(note.updatedAt)}` : 'note existante';
-                        updateCharCountAndMirror();
+                        noteDateSpan.textContent = note.updatedAt ? `modif. ${formatDate(note.updatedAt)}` : 'note';
+                        updateCharCount();
                         lucide.createIcons();
                     } else {
                         showToast('Note introuvable', 'error');
@@ -273,163 +313,146 @@
                 }
             }
 
-            // Sauvegarde (conserve le HTML)
-            async function saveNote() {
-                const title = titleInput.value.trim() || 'Sans titre';
-                const contentHtml = editableDiv.innerHTML.trim();   // On garde la mise en forme
-                const contentText = editableDiv.innerText.trim();   // fallback
-                if (!contentText && !title) {
-                    showToast('Écrivez quelque chose', 'error');
-                    return;
-                }
-                const now = new Date().toISOString();
-                const noteData = {
-                    title,
-                    content: contentText,          // texte brut pour recherches
-                    contentHtml: contentHtml || '',  // riche pour édition
-                    fontFamily: editableDiv.style.fontFamily || 'Inter',
-                    fontSize: currentFontSize.toString(),
-                    updatedAt: now,
-                    ...(noteId ? {} : { createdAt: now, id: noteId || Date.now().toString(36) })
-                };
-
-                try {
-                    if (noteId) {
-                        await db.collection('notes').doc(noteId).update(noteData);
-                        showToast('Note mise à jour');
-                    } else {
-                        const newId = Date.now().toString(36) + '-' + Math.random().toString(36).substring(2);
-                        noteId = newId;
-                        await db.collection('notes').doc(newId).set({ ...noteData, id: newId, createdAt: now });
-                        window.history.replaceState({}, '', `?id=${newId}`);
-                        deleteBtn.classList.remove('hidden');
-                        showToast('Nouvelle note enregistrée');
-                    }
-                    isDirty = false;
-                    noteDateSpan.textContent = `enregistrée ${formatDate(now)}`;
-                } catch (e) {
-                    showToast('Erreur sauvegarde', 'error');
-                }
-            }
-
-            // Auto-save silencieux (toutes les 30s)
-            setInterval(() => { if (isDirty) saveNote(); }, 30000);
-
-            // Supprimer
+            // --- SUPPRESSION ---
             async function deleteNote() {
                 if (!noteId || !confirm('Supprimer définitivement ?')) return;
                 try {
                     await db.collection('notes').doc(noteId).delete();
-                    showToast('Note supprimée');
+                    showToast('Note supprimée', 'success');
                     setTimeout(() => window.location.href = 'index.html', 1000);
                 } catch (e) {
                     showToast('Erreur suppression', 'error');
                 }
             }
 
-            // ---------- PERSONNALISATION STYLES ----------
-            function applyStyle(cmd) {
-                document.execCommand('styleWithCSS', false, true); // pour surlignage
-                if (cmd === 'bold') {
-                    document.execCommand('bold', false, null);
-                } else if (cmd === 'highlight') {
-                    // surlignage jaune (background)
-                    document.execCommand('backColor', false, '#fef9c3');
-                }
-                editableDiv.focus();
-                updateCharCountAndMirror();
+            // --- FORMATAGE : GRAS ---
+            function applyFormat(command) {
+                document.execCommand('styleWithCSS', false, true);
+                if (command === 'bold') document.execCommand('bold', false, null);
+                editor.focus();
+                updateCharCount();
                 lucide.createIcons();
             }
 
-            function increaseFontSize() {
-                currentFontSize = Math.min(2.5, currentFontSize + 0.1);
-                editableDiv.style.fontSize = currentFontSize + 'rem';
-                isDirty = true;
+            // --- SURLIGNEUR avec 3 couleurs + effacer ---
+            function applyHighlight(color) {
+                document.execCommand('styleWithCSS', false, true);
+                // appliquer la couleur de fond
+                document.execCommand('backColor', false, color);
+                editor.focus();
+                updateCharCount();
+                lucide.createIcons();
             }
-            function decreaseFontSize() {
-                currentFontSize = Math.max(0.9, currentFontSize - 0.1);
-                editableDiv.style.fontSize = currentFontSize + 'rem';
-                isDirty = true;
-            }
-            function changeFont(font) {
-                editableDiv.style.fontFamily = `'${font}', sans-serif`;
-                isDirty = true;
-                editableDiv.focus();
+            function removeHighlight() {
+                document.execCommand('styleWithCSS', false, true);
+                // mettre fond transparent
+                document.execCommand('backColor', false, 'transparent');
+                editor.focus();
+                updateCharCount();
+                lucide.createIcons();
             }
 
-            // Format date
+            // --- TAILLE POLICE ---
+            function changeFontSize(delta) {
+                currentFontSize = Math.min(2.8, Math.max(0.9, currentFontSize + delta));
+                editor.style.fontSize = currentFontSize + 'rem';
+                isDirty = true;
+                editor.focus();
+            }
+
+            // --- CHANGER POLICE ---
+            function changeFont(font) {
+                editor.style.fontFamily = `'${font}', sans-serif`;
+                isDirty = true;
+                editor.focus();
+            }
+
+            // --- ANNULER / RÉTABLIR (undo/redo natif) ---
+            function undoAction() {
+                document.execCommand('undo', false, null);
+                editor.focus();
+                updateCharCount();
+            }
+            function redoAction() {
+                document.execCommand('redo', false, null);
+                editor.focus();
+                updateCharCount();
+            }
+
+            // --- TOAST (correction bug null setAttribute) ---
+            function showToast(msg, type = 'success') {
+                if (!toast || !toastIcon || !toastMessage) return;
+                
+                toastMessage.textContent = msg;
+                
+                // Mise à jour sécurisée de l'icône
+                const iconName = type === 'error' ? 'alert-circle' : 'check-circle';
+                const colorClass = type === 'error' ? 'text-rose-500' : 'text-emerald-500';
+                
+                // Remplacer l'icône via dataset (plus fiable que setAttribute sur l'élément)
+                toastIcon.setAttribute('data-lucide', iconName);
+                toastIcon.className = `w-5 h-5 ${colorClass}`;
+                
+                lucide.createIcons(); // réinitialise toutes les icônes
+                
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2700);
+            }
+
+            // --- FORMAT DATE ---
             function formatDate(iso) {
+                if (!iso) return '';
                 const d = new Date(iso);
                 return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
             }
 
-            // Toast
-            function showToast(msg, type = 'success') {
-                const icon = toast.querySelector('i');
-                toastMessage.textContent = msg;
-                icon.setAttribute('data-lucide', type === 'error' ? 'alert-circle' : 'check-circle');
-                icon.className = `w-5 h-5 ${type === 'error' ? 'text-rose-500' : 'text-emerald-500'}`;
-                lucide.createIcons();
-                toast.classList.remove('translate-y-20', 'opacity-0');
-                setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2700);
-            }
+            // --- AUTO-SAVE ---
+            setInterval(() => { if (isDirty) saveNote(); }, 30000);
 
-            // Événements
-            editableDiv.addEventListener('input', updateCharCountAndMirror);
-            titleInput.addEventListener('input', () => isDirty = true);
-            editableDiv.addEventListener('keydown', (e) => {
+            // --- RACCOURCIS CLAVIER ---
+            editor.addEventListener('keydown', (e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
                     saveNote();
                 }
+                // laisser Ctrl Z / Y natifs fonctionner
             });
 
-            // Rafraîchir les icônes après exécution commande
-            document.addEventListener('selectionchange', () => {
-                // petit délai pour que les boutons restent réactifs
-            });
-
-            // Exposer les fonctions globales pour les boutons onclick
+            // --- EXPOSITION GLOBALE (pour les attributs onclick) ---
             window.saveNote = saveNote;
             window.deleteNote = deleteNote;
-            window.applyStyle = applyStyle;
-            window.increaseFontSize = increaseFontSize;
-            window.decreaseFontSize = decreaseFontSize;
+            window.applyFormat = applyFormat;
+            window.applyHighlight = applyHighlight;
+            window.removeHighlight = removeHighlight;
+            window.changeFontSize = changeFontSize;
             window.changeFont = changeFont;
+            window.undoAction = undoAction;
+            window.redoAction = redoAction;
 
-            // Mise à jour du compteur initial
-            updateCharCountAndMirror();
+            // initialisation compteur
+            updateCharCount();
             lucide.createIcons();
 
-            // Sauvegarde avant de quitter
+            // prévenir perte données
             window.addEventListener('beforeunload', (e) => { if (isDirty) { e.preventDefault(); e.returnValue = ''; } });
         })();
     </script>
-    <!-- petite adaptation pour que le contenteditable prenne toute la hauteur sur mobile -->
+    
+    <!-- petits ajustements -->
     <style>
-        #editableArea:empty:before {
-            content: attr(placeholder);
-            color: #cbd5e1;
-            font-style: normal;
-            font-weight: 300;
-        }
-        /* arrière-plan blanc impératif */
-        * {
-            background-color: white;
-        }
-        body, html, main, div, header, footer, section {
-            background: white;
-        }
-        /* conserver les petits effets sans casser le fond */
-        .hover\:bg-slate-50:hover { background-color: #f8fafc !important; }
-        .bg-indigo-600 { background-color: #4f46e5 !important; }
-        .bg-indigo-600 * { background-color: transparent; }
-        .text-white { color: white; }
+        /* garder le fond blanc */
         [contenteditable] {
             background: white;
         }
-        .toolbar-panel {
-            background: white !important;
+        .toolbar-glass button, .toolbar-glass select {
+            background: transparent;
+        }
+        /* couleurs de surlignage spécifiques */
+        mark, [style*="background-color"] {
+            border-radius: 0.2em;
+            padding: 0 0.1em;
         }
     </style>
 </body>
